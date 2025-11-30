@@ -213,14 +213,18 @@ app.post('/submit', async (req, res) => {
     // Set content
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-    // Set viewport to PC size (1280px) to ensure desktop layout
-    await page.setViewport({ width: 1280, height: 1123 });
+    // [수정 후] 뷰포트 설정 (A4 비율 고려, 고해상도)
+    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 2 });
+
+    // [★핵심 1] 화면(Screen) 모드로 강제 설정
+    // 이걸 해야 인쇄용 CSS가 아니라 'PC 화면용 CSS'가 적용되어 그리드가 유지됩니다.
+    await page.emulateMediaType('screen');
 
     // Generate PDF
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      printBackground: false, // User requested no background
-      margin: { top: '1cm', right: '1cm', bottom: '1cm', left: '1cm' }
+      printBackground: true, // [★핵심 2] false -> true로 변경 (배경색, 그라데이션 출력)
+      margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' } // cm보다 mm가 더 정밀합니다.
     });
 
     // 4. Upload to OneDrive

@@ -210,21 +210,26 @@ app.post('/submit', async (req, res) => {
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
 
-    // Set content
+    // 1. 뷰포트를 "PC 화면 크기"로 넓게 잡습니다. (모바일 모드 탈출!)
+    await page.setViewport({ width: 1280, height: 1080 });
+
+    // 2. 내용 설정
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-    // [수정 후] 뷰포트 설정 (A4 비율 고려, 고해상도)
-    await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 2 });
-
-    // [★핵심 1] 화면(Screen) 모드로 강제 설정
-    // 이걸 해야 인쇄용 CSS가 아니라 'PC 화면용 CSS'가 적용되어 그리드가 유지됩니다.
+    // 3. 화면 모드 강제 (배경색 및 레이아웃 유지)
     await page.emulateMediaType('screen');
 
-    // Generate PDF
+    // 4. PDF 생성 (핵심: scale 옵션 사용)
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      printBackground: true, // [★핵심 2] false -> true로 변경 (배경색, 그라데이션 출력)
-      margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' } // cm보다 mm가 더 정밀합니다.
+      printBackground: false,  // 배경색 없이
+      scale: 0.6,             // [★핵심] 1280px 화면을 A4 폭에 맞게 60%로 축소
+      margin: {
+        top: '10mm',
+        right: '10mm',
+        bottom: '10mm',
+        left: '10mm'
+      }
     });
 
     // 4. Upload to OneDrive

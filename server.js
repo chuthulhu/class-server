@@ -235,6 +235,7 @@ app.post('/submit', async (req, res) => {
 
     // Convert PDF buffer to base64 for client download
     const pdfBase64 = pdfBuffer.toString('base64');
+    console.log(`PDF generated. Base64 length: ${pdfBase64.length}, First 50 chars: ${pdfBase64.substring(0, 50)}`);
 
     res.json({
       success: true,
